@@ -16,7 +16,22 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from daimon_esports_app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('users/', views.UserList.as_view()),
+    path('users/<str:pk>/', views.UserDetail.as_view()),
+    path('disciplines/', views.DisciplineList.as_view()),
+    path('disciplines/<str:pk>/', views.DisciplineDetail.as_view()),
+    path('tournaments/', views.TournamentList.as_view()),
+    path('tournaments/<str:pk>/', views.TournamentDetail.as_view()),
+    path('rosters/', views.RosterList.as_view()),
+    path('rosters/<str:pk>/', views.RosterDetail.as_view()),
+    path('games/', views.GameList.as_view()),
+    path('games/<str:pk>/', views.GameDetail.as_view()),
+    path('players/', views.PlayerList.as_view()),
+    path('players/<str:pk>/', views.PlayerDetail.as_view()),
+    path('requests/', views.RequestList.as_view()),
+    path('requests/<str:pk>/', views.RequestDetail.as_view()),
 ]
