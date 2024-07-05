@@ -40,7 +40,16 @@ INSTALLED_APPS = [
     'daimon_esports_app',
     'rest_framework',
     'corsheaders',
+    'rest_framework_simplejwt',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+AUTH_USER_MODEL = 'daimon_esports_app.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

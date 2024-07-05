@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser, BaseUserManager, PermissionsMixin
 import random
 
 def generate_hex_id(length=12):
@@ -7,14 +8,36 @@ def generate_hex_id(length=12):
 
 # Create your models here.
 
-class User(models.Model):
+class UserManager(BaseUserManager):
+    def create_user(self, username, password=None, **extra_fields):
+        if not username:
+            raise ValueError('The Username field must be set')
+        user = self.model(username=username, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+    def create_superuser(self, username, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(username, password, **extra_fields)
+
+class User(AbstractUser, PermissionsMixin):
     id = models.CharField(max_length=12, primary_key=True)
     display = models.CharField(max_length=255)
-    username = models.CharField(max_length=255)
-    hash = models.CharField(max_length=255)
-    organizer = models.BooleanField()
+    username = models.CharField(max_length=255, unique=True)
+    password = models.CharField(max_length=255)
+    organizer = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = UserManager()
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['display']
+
     def save(self, *args, **kwargs):
-        self.id = self.generate_unique_id()
+        if not self.id:
+            self.id = self.generate_unique_id()
         super(User, self).save(*args, **kwargs)
     def generate_unique_id(self):
         new_id = generate_hex_id()
@@ -28,7 +51,8 @@ class Discipline(models.Model):
     id = models.CharField(max_length=12, primary_key=True)
     name = models.CharField(max_length=255)
     def save(self, *args, **kwargs):
-        self.id = self.generate_unique_id()
+        if not self.id:
+            self.id = self.generate_unique_id()
         super(Discipline, self).save(*args, **kwargs)
     def generate_unique_id(self):
         new_id = generate_hex_id()
@@ -55,7 +79,8 @@ class Tournament(models.Model):
     meeting_platform = models.CharField(max_length=255)
     streaming_platform = models.CharField(max_length=255)
     def save(self, *args, **kwargs):
-        self.id = self.generate_unique_id()
+        if not self.id:
+            self.id = self.generate_unique_id()
         super(Tournament, self).save(*args, **kwargs)
     def generate_unique_id(self):
         new_id = generate_hex_id()
@@ -72,7 +97,8 @@ class Roster(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
     def save(self, *args, **kwargs):
-        self.id = self.generate_unique_id()
+        if not self.id:
+            self.id = self.generate_unique_id()
         super(Roster, self).save(*args, **kwargs)
     def generate_unique_id(self):
         new_id = generate_hex_id()
@@ -90,7 +116,8 @@ class Game(models.Model):
     minutes = models.IntegerField()
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
     def save(self, *args, **kwargs):
-        self.id = self.generate_unique_id()
+        if not self.id:
+            self.id = self.generate_unique_id()
         super(Game, self).save(*args, **kwargs)
     def generate_unique_id(self):
         new_id = generate_hex_id()
@@ -107,7 +134,8 @@ class Player(models.Model):
     class Meta:
         unique_together = ('user', 'roster')
     def save(self, *args, **kwargs):
-        self.id = self.generate_unique_id()
+        if not self.id:
+            self.id = self.generate_unique_id()
         super(Player, self).save(*args, **kwargs)
     def generate_unique_id(self):
         new_id = generate_hex_id()
@@ -124,7 +152,8 @@ class Request(models.Model):
     class Meta:
         unique_together = ('sender', 'receiver')
     def save(self, *args, **kwargs):
-        self.id = self.generate_unique_id()
+        if not self.id:
+            self.id = self.generate_unique_id()
         super(Request, self).save(*args, **kwargs)
     def generate_unique_id(self):
         new_id = generate_hex_id()
