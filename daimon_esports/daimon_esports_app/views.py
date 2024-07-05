@@ -41,7 +41,7 @@ class LogoutUser(generics.CreateAPIView):
 class Auth(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request, *args, **kwargs):
-        return Response(status=200)
+        return HttpResponse("Authenticated")
 
 
 class UserList(generics.ListCreateAPIView):

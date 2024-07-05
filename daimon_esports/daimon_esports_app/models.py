@@ -33,7 +33,7 @@ class User(AbstractUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['display']
+    REQUIRED_FIELDS = []
 
     def save(self, *args, **kwargs):
         if not self.id:

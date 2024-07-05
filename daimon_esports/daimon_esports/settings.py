@@ -37,10 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'daimon_esports_app',
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
+    'daimon_esports_app',
 ]
 
 REST_FRAMEWORK = {
