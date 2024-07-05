@@ -1,15 +1,15 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import get_user_model
 from .models import User, Discipline, Tournament, Roster, Game, Player, Request
-from .serializers import RegisterSerializer, UserSerializer, DisciplineSerializer, TournamentSerializer, RosterSerializer, GameSerializer, PlayerSerializer, RequestSerializer
+from .serializers import RegisterSerializer, LogoutSerializer, UserSerializer, DisciplineSerializer, TournamentSerializer, RosterSerializer, GameSerializer, PlayerSerializer, RequestSerializer
 from django.http import HttpResponse
+from django.core.exceptions import ObjectDoesNotExist
 
 # Create your views here.
 
 def index(request):
-    return HttpResponse("Daimon Esports API")
+    return HttpResponse("Daimon Esports API", status=status.HTTP_200_OK)
 
 class RegisterUser(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -28,20 +28,19 @@ class LoginUser(generics.CreateAPIView):
         })
 
 class LogoutUser(generics.CreateAPIView):
+    serializer_class = LogoutSerializer
     permission_classes = [permissions.IsAuthenticated]
     def post(self, request, *args, **kwargs):
         try:
-            refresh_token = request.data["refresh"]
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-            return Response(status=205)
-        except Exception as e:
-            return Response(status=400)
+            request.user.auth_token.delete()
+        except (AttributeError, ObjectDoesNotExist):
+            pass
+        return Response("Logged out", status=status.HTTP_200_OK)
 
 class Auth(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request, *args, **kwargs):
-        return HttpResponse("Authenticated")
+        return HttpResponse("Authenticated", status=status.HTTP_200_OK)
 
 
 class UserList(generics.ListCreateAPIView):

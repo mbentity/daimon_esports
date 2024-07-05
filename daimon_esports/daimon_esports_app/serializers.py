@@ -19,6 +19,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+class LogoutSerializer(serializers.Serializer):
+    pass
+
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)
     class Meta:
