@@ -46,6 +46,11 @@ class TournamentSerializer(serializers.ModelSerializer):
         model = Tournament
         fields = '__all__'
 
+class TournamentSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tournament
+        fields = ['name', 'discipline']
+
 class RosterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Roster

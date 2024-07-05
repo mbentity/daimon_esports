@@ -2,9 +2,10 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User, Discipline, Tournament, Roster, Game, Player, Request
-from .serializers import RegisterSerializer, LogoutSerializer, UserSerializer, DisciplineSerializer, TournamentSerializer, RosterSerializer, GameSerializer, PlayerSerializer, RequestSerializer
+from .serializers import RegisterSerializer, LogoutSerializer, UserSerializer, DisciplineSerializer, TournamentSerializer, TournamentSearchSerializer, RosterSerializer, GameSerializer, PlayerSerializer, RequestSerializer
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework import filters
 
 # Create your views here.
 
@@ -66,6 +67,19 @@ class TournamentList(generics.ListCreateAPIView):
 class TournamentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
+
+class TournamentSearch(generics.ListAPIView):
+    queryset = Tournament.objects.all()
+    serializer_class = TournamentSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'meeting_platform', 'streaming_platform']
+
+    def get_queryset(self):
+        queryset = Tournament.objects.all()
+        query = self.request.query_params.get('q', None)
+        if query is not None:
+            queryset = queryset.filter(name__icontains=query)
+        return queryset
 
 class RosterList(generics.ListCreateAPIView):
     queryset = Roster.objects.all()

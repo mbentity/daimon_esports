@@ -33,6 +33,7 @@ urlpatterns = [
     path('disciplines/<str:pk>/', views.DisciplineDetail.as_view()),
     path('tournaments/', views.TournamentList.as_view()),
     path('tournaments/<str:pk>/', views.TournamentDetail.as_view()),
+    path('tournaments/', views.TournamentSearch.as_view(), name='tournament_search'),
     path('rosters/', views.RosterList.as_view()),
     path('rosters/<str:pk>/', views.RosterDetail.as_view()),
     path('games/', views.GameList.as_view()),
