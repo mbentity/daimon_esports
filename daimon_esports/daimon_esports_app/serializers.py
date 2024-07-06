@@ -8,12 +8,11 @@ class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     class Meta:
         model = User
-        fields = ['username', 'password', 'display', 'organizer']
+        fields = ['username', 'password', 'display']
     def create(self, validated_data):
         user = User(
             username=validated_data['username'],
             display=validated_data['display'],
-            organizer=validated_data['organizer'],
         )
         user.set_password(validated_data['password'])
         user.save()
