@@ -89,6 +89,19 @@ class GameDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
 
+class GamePop(generics.ListAPIView):
+    serializer_class = GameSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['count']
+
+    # get the N next games based on timestamp
+
+    def get_queryset(self):
+        count = self.request.query_params.get('count', None)
+        if count is not None:
+            return Game.objects.order_by('timestamp')[:int(count)]
+        return Game.objects.order_by('timestamp')[:5]
+
 class PlayerList(generics.ListCreateAPIView):
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer

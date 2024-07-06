@@ -112,6 +112,8 @@ class Game(models.Model):
     id = models.CharField(max_length=12, primary_key=True)
     roster1 = models.ForeignKey(Roster, on_delete=models.CASCADE, related_name='roster1')
     roster2 = models.ForeignKey(Roster, on_delete=models.CASCADE, related_name='roster2')
+    score1 = models.IntegerField(default=None, blank=True, null=True)
+    score2 = models.IntegerField(default=None, blank=True, null=True)
     timestamp = models.DateTimeField()
     minutes = models.IntegerField()
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)

@@ -37,6 +37,7 @@ urlpatterns = [
     path('rosters/', views.RosterList.as_view()),
     path('rosters/<str:pk>/', views.RosterDetail.as_view()),
     path('games/', views.GameList.as_view()),
+    path('games/', views.GamePop.as_view(), name='game-pop'),
     path('games/<str:pk>/', views.GameDetail.as_view()),
     path('players/', views.PlayerList.as_view()),
     path('players/<str:pk>/', views.PlayerDetail.as_view()),
