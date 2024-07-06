@@ -61,11 +61,22 @@ class TournamentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
 
+class CompletedFilter(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        completed = request.query_params.get('completed', None)
+        if completed is not None:
+            if completed.lower() == 'true':
+                return queryset.filter(games_stop__lte=timezone.now())
+            elif completed.lower() == 'false':
+                return queryset.exclude(games_stop__lte=timezone.now())
+        return queryset
+
 class TournamentSearch(generics.ListAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSearchSerializer
-    filter_backends = [filters.SearchFilter]
+    filter_backends = [filters.SearchFilter, CompletedFilter]
     search_fields = ['name', 'discipline__name']
+    ordering_fields = ['games_start', 'games_stop', 'sub_start', 'sub_stop']
 
 class RosterList(generics.ListCreateAPIView):
     queryset = Roster.objects.all()
@@ -89,10 +100,15 @@ class GamePop(generics.ListAPIView):
     def get_queryset(self):
         count = self.request.query_params.get('count', None)
         now = timezone.now()
-        print(f"Current time: {now}")
+        queryset = Game.objects.all()
+        filtered_games = [
+            game for game in queryset
+            if game.timestamp >= now - timezone.timedelta(minutes=game.minutes)
+        ]
+        sorted_games = sorted(filtered_games, key=lambda game: game.timestamp)
         if count is not None:
-            return Game.objects.filter(timestamp__gt=now).order_by('timestamp')[:int(count)]
-        return Game.objects.filter(timestamp__gt=now).order_by('timestamp')[:5]
+            return sorted_games[:int(count)]
+        return sorted_games[:5]
 
 class PlayerList(generics.ListCreateAPIView):
     queryset = Player.objects.all()
