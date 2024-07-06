@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from .models import User, Discipline, Tournament, Roster, Game, Player, Request
-from .serializers import RegisterSerializer, LogoutSerializer, UserSerializer, DisciplineSerializer, TournamentSerializer, TournamentSearchSerializer, RosterSerializer, GameSerializer, PlayerSerializer, RequestSerializer
+from .models import User, Discipline, Tournament, Team, Game, Player, Request
+from .serializers import RegisterSerializer, LogoutSerializer, UserSerializer, DisciplineSerializer, TournamentSerializer, TournamentSearchSerializer, TeamSerializer, GameSerializer, PlayerSerializer, RequestSerializer
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import filters
@@ -94,13 +94,13 @@ class TournamentSearch(generics.ListAPIView):
     filter_backends = [filters.SearchFilter, CompletedFilter, ClosedFilter]
     search_fields = ['name', 'discipline__name']
 
-class RosterList(generics.ListCreateAPIView):
-    queryset = Roster.objects.all()
-    serializer_class = RosterSerializer
+class TeamList(generics.ListCreateAPIView):
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
 
-class RosterDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Roster.objects.all()
-    serializer_class = RosterSerializer
+class TeamDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
 
 class GameList(generics.ListCreateAPIView):
     queryset = Game.objects.all()

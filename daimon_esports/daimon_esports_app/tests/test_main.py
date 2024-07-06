@@ -1,5 +1,5 @@
 from django.test import TestCase
-from models import User, Discipline, Tournament, Roster, Game, Player, Request
+from models import User, Discipline, Tournament, Team, Game, Player, Request
 
 class TestUser(TestCase):
     def test_user(self):
@@ -13,9 +13,9 @@ class TestTournament(TestCase):
     def test_tournament(self):
         tournament = Tournament.objects.create(name='testtournament')
 
-class TestRoster(TestCase):
-    def test_roster(self):
-        roster = Roster.objects.create(name='testroster')
+class TestTeam(TestCase):
+    def test_team(self):
+        team = Team.objects.create(name='testteam')
 
 class TestGame(TestCase):
     def test_game(self):

@@ -3,7 +3,7 @@ from django import forms
 
 # Register your models here.
 
-from .models import User, Discipline, Tournament, Roster, Game, Player, Request
+from .models import User, Discipline, Tournament, Team, Game, Player, Request
 
 class UserAdminForm(forms.ModelForm):
     class Meta:
@@ -29,13 +29,13 @@ class TournamentAdminForm(forms.ModelForm):
 class TournamentAdmin(admin.ModelAdmin):
     form = TournamentAdminForm
 
-class RosterAdminForm(forms.ModelForm):
+class TeamAdminForm(forms.ModelForm):
     class Meta:
-        model = Roster
+        model = Team
         fields = '__all__'
         exclude = ['id']
-class RosterAdmin(admin.ModelAdmin):
-    form = RosterAdminForm
+class TeamAdmin(admin.ModelAdmin):
+    form = TeamAdminForm
 
 class GameAdminForm(forms.ModelForm):
     class Meta:
@@ -64,7 +64,7 @@ class RequestAdmin(admin.ModelAdmin):
 admin.site.register(User, UserAdmin)
 admin.site.register(Discipline, DisciplineAdmin)
 admin.site.register(Tournament, TournamentAdmin)
-admin.site.register(Roster, RosterAdmin)
+admin.site.register(Team, TeamAdmin)
 admin.site.register(Game, GameAdmin)
 admin.site.register(Player, PlayerAdmin)
 admin.site.register(Request, RequestAdmin)

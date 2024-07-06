@@ -23,7 +23,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractUser, PermissionsMixin):
     id = models.CharField(max_length=12, primary_key=True)
-    display = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     username = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
     organizer = models.BooleanField(default=False)
@@ -45,7 +45,7 @@ class User(AbstractUser, PermissionsMixin):
             new_id = generate_hex_id()
         return new_id
     def __str__(self):
-        return self.username
+        return self.name
 
 class Discipline(models.Model):
     id = models.CharField(max_length=12, primary_key=True)
@@ -87,7 +87,7 @@ class Tournament(models.Model):
     def __str__(self):
         return self.name
 
-class Roster(models.Model):
+class Team(models.Model):
     id = models.CharField(max_length=12, primary_key=True)
     name = models.CharField(max_length=255)
     tag = models.CharField(max_length=4, null=True)
@@ -96,10 +96,10 @@ class Roster(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             self.id = self.generate_unique_id()
-        super(Roster, self).save(*args, **kwargs)
+        super(Team, self).save(*args, **kwargs)
     def generate_unique_id(self):
         new_id = generate_hex_id()
-        while Roster.objects.filter(id=new_id).exists():
+        while Team.objects.filter(id=new_id).exists():
             new_id = generate_hex_id()
         return new_id
     def __str__(self):
@@ -107,8 +107,8 @@ class Roster(models.Model):
 
 class Game(models.Model):
     id = models.CharField(max_length=12, primary_key=True)
-    roster1 = models.ForeignKey(Roster, on_delete=models.CASCADE, related_name='roster1')
-    roster2 = models.ForeignKey(Roster, on_delete=models.CASCADE, related_name='roster2')
+    team1 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team1', null=True)
+    team2 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team2', null=True)
     score1 = models.IntegerField(default=None, blank=True, null=True)
     score2 = models.IntegerField(default=None, blank=True, null=True)
     timestamp = models.DateTimeField()
@@ -124,14 +124,14 @@ class Game(models.Model):
             new_id = generate_hex_id()
         return new_id
     def __str__(self):
-        return self.roster1.tag + ' vs ' + self.roster2.tag
+        return self.team1.tag + ' vs ' + self.team2.tag
 
 class Player(models.Model):
     id = models.CharField(max_length=12, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    roster = models.ForeignKey(Roster, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
     class Meta:
-        unique_together = ('user', 'roster')
+        unique_together = ('user', 'team')
     def save(self, *args, **kwargs):
         if not self.id:
             self.id = self.generate_unique_id()
@@ -142,7 +142,7 @@ class Player(models.Model):
             new_id = generate_hex_id()
         return new_id
     def __str__(self):
-        return self.roster.tag + ' ' + self.user.display
+        return self.team.tag + ' ' + self.user.name
 
 class Request(models.Model):
     id = models.CharField(max_length=12, primary_key=True)
