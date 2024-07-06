@@ -107,8 +107,8 @@ class Team(models.Model):
 
 class Game(models.Model):
     id = models.CharField(max_length=12, primary_key=True)
-    team1 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team1', null=True)
-    team2 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team2', null=True)
+    team1 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team1')
+    team2 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team2')
     score1 = models.IntegerField(default=None, blank=True, null=True)
     score2 = models.IntegerField(default=None, blank=True, null=True)
     timestamp = models.DateTimeField()
