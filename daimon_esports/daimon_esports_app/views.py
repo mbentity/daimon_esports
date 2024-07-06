@@ -78,13 +78,22 @@ class CompletedFilter(filters.BaseFilterBackend):
             elif completed.lower() == 'false':
                 return queryset.exclude(games_stop__lte=timezone.now())
         return queryset
+    
+class ClosedFilter(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        closed = request.query_params.get('closed', None)
+        if closed is not None:
+            if closed.lower() == 'true':
+                return queryset.filter(sub_stop__lte=timezone.now())
+            elif closed.lower() == 'false':
+                return queryset.exclude(sub_stop__lte=timezone.now())
+        return queryset
 
 class TournamentSearch(generics.ListAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSearchSerializer
-    filter_backends = [filters.SearchFilter, CompletedFilter]
+    filter_backends = [filters.SearchFilter, CompletedFilter, ClosedFilter]
     search_fields = ['name', 'discipline__name']
-    ordering_fields = ['games_start', 'games_stop', 'sub_start', 'sub_stop']
 
 class RosterList(generics.ListCreateAPIView):
     queryset = Roster.objects.all()

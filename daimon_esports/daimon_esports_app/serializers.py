@@ -48,7 +48,7 @@ class TournamentSerializer(serializers.ModelSerializer):
 class TournamentSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tournament
-        fields = ['name', 'discipline', 'id']
+        fields = '__all__'
         depth = 1
 
 class RosterSerializer(serializers.ModelSerializer):
