@@ -50,6 +50,7 @@ class TournamentSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tournament
         fields = ['name', 'discipline']
+        depth = 1
 
 class RosterSerializer(serializers.ModelSerializer):
     class Meta:

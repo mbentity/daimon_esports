@@ -5,6 +5,7 @@ from .serializers import RegisterSerializer, LogoutSerializer, UserSerializer, D
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import filters
+from django.utils import timezone
 
 # Create your views here.
 
@@ -62,16 +63,9 @@ class TournamentDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class TournamentSearch(generics.ListAPIView):
     queryset = Tournament.objects.all()
-    serializer_class = TournamentSerializer
+    serializer_class = TournamentSearchSerializer
     filter_backends = [filters.SearchFilter]
-    search_fields = ['name', 'meeting_platform', 'streaming_platform']
-
-    def get_queryset(self):
-        queryset = Tournament.objects.all()
-        query = self.request.query_params.get('q', None)
-        if query is not None:
-            queryset = queryset.filter(name__icontains=query)
-        return queryset
+    search_fields = ['name', 'discipline__name']
 
 class RosterList(generics.ListCreateAPIView):
     queryset = Roster.objects.all()
@@ -91,16 +85,14 @@ class GameDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class GamePop(generics.ListAPIView):
     serializer_class = GameSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['count']
-
-    # get the N next games based on timestamp
 
     def get_queryset(self):
         count = self.request.query_params.get('count', None)
+        now = timezone.now()
+        print(f"Current time: {now}")
         if count is not None:
-            return Game.objects.order_by('timestamp')[:int(count)]
-        return Game.objects.order_by('timestamp')[:5]
+            return Game.objects.filter(timestamp__gt=now).order_by('timestamp')[:int(count)]
+        return Game.objects.filter(timestamp__gt=now).order_by('timestamp')[:5]
 
 class PlayerList(generics.ListCreateAPIView):
     queryset = Player.objects.all()
