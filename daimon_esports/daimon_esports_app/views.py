@@ -17,6 +17,14 @@ class UserView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request, *args, **kwargs):
         return Response(self.serializer_class(request.user).data)
+    # allow to delete user
+    def delete(self, request, *args, **kwargs):
+        try:
+            request.user.auth_token.delete()
+            request.user.delete()
+        except (AttributeError, ObjectDoesNotExist):
+            pass
+        return Response("User deleted", status=status.HTTP_200_OK)
 
 class UserRegister(generics.CreateAPIView):
     queryset = User.objects.all()
