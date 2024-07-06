@@ -1,7 +1,4 @@
-# test_example.py
-
 from django.test import TestCase
-from django.urls import reverse
 from models import User, Discipline, Tournament, Roster, Game, Player, Request
 
 class TestUser(TestCase):

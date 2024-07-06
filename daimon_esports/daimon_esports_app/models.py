@@ -66,16 +66,13 @@ class Tournament(models.Model):
     id = models.CharField(max_length=12, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    # utility info: dates
     sub_start = models.DateTimeField()
     sub_stop = models.DateTimeField()
     games_start = models.DateTimeField()
     games_stop = models.DateTimeField()
-    # tournament details
     discipline = models.ForeignKey(Discipline, on_delete=models.CASCADE)
     team_count = models.IntegerField()
     player_count = models.IntegerField()
-    # platforms
     meeting_platform = models.CharField(max_length=255)
     streaming_platform = models.CharField(max_length=255)
     def save(self, *args, **kwargs):
