@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from .models import User, Discipline, Tournament, Team, Game, Player, Request
-from .serializers import RegisterSerializer, LogoutSerializer, UserPasswordSerializer, UserSerializer, DisciplineSerializer, TournamentSerializer, TournamentSearchSerializer, TeamSerializer, GameSerializer, PlayerSerializer, RequestSerializer
+from .serializers import RegisterSerializer, LogoutSerializer, TournamentCreateSerializer, UserPasswordSerializer, UserSerializer, DisciplineSerializer, TournamentSerializer, TournamentSearchSerializer, TeamSerializer, GameSerializer, PlayerSerializer, RequestSerializer
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import filters
@@ -86,6 +86,12 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+class UserTournaments(generics.ListAPIView):
+    serializer_class = TournamentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def get_queryset(self):
+        return Tournament.objects.filter(user=self.request.user)
+
 class DisciplineList(generics.ListCreateAPIView):
     queryset = Discipline.objects.all()
     serializer_class = DisciplineSerializer
@@ -101,6 +107,29 @@ class TournamentList(generics.ListCreateAPIView):
 class TournamentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
+
+class TournamentCreate(generics.CreateAPIView):
+    queryset = Tournament.objects.all()
+    serializer_class = TournamentCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        queryset = Tournament.objects.all()
+        # allow only if user is an organizer
+        if not request.user.organizer:
+            return Response("User is not an organizer", status=status.HTTP_403_FORBIDDEN)
+        return self.create(request, *args, **kwargs)
+
+class TournamentUpdate(generics.UpdateAPIView):
+    queryset = Tournament.objects.all()
+    serializer_class = TournamentCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def put(self, request, *args, **kwargs):
+        if not request.user.organizer:
+            return Response("User is not an organizer", status=status.HTTP_403_FORBIDDEN)
+        tournament = self.get_object()
+        if tournament.user != request.user:
+            return Response("User is not the organizer of the tournament", status=status.HTTP_403_FORBIDDEN)
+        return self.update(request, *args, **kwargs)
 
 class CompletedFilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):

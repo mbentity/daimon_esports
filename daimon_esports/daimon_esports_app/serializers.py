@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import User, Discipline, Tournament, Team, Game, Player, Request
@@ -46,6 +47,32 @@ class TournamentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tournament
         fields = '__all__'
+
+class TournamentCreateSerializer(serializers.ModelSerializer):
+    sub_start_timestamp = serializers.CharField(write_only=True)
+    sub_stop_timestamp = serializers.CharField(write_only=True)
+    games_start_timestamp = serializers.CharField(write_only=True)
+    games_stop_timestamp = serializers.CharField(write_only=True)
+    class Meta:
+        model = Tournament
+        fields = ['name', 'discipline', 'team_count', 'player_count', 'meeting_platform', 'streaming_platform',
+                    'sub_start_timestamp', 'sub_stop_timestamp', 'games_start_timestamp', 'games_stop_timestamp']
+    def create(self, validated_data):
+        try:
+            sub_start_timestamp = validated_data.pop('sub_start_timestamp')
+            sub_stop_timestamp = validated_data.pop('sub_stop_timestamp')
+            games_start_timestamp = validated_data.pop('games_start_timestamp')
+            games_stop_timestamp = validated_data.pop('games_stop_timestamp')
+
+            validated_data['sub_start'] = datetime.fromisoformat(sub_start_timestamp)
+            validated_data['sub_stop'] = datetime.fromisoformat(sub_stop_timestamp)
+            validated_data['games_start'] = datetime.fromisoformat(games_start_timestamp)
+            validated_data['games_stop'] = datetime.fromisoformat(games_stop_timestamp)
+            validated_data['user'] = self.context['request'].user
+
+            return Tournament.objects.create(**validated_data)
+        except OSError as e:
+            raise serializers.ValidationError(f"Invalid timestamp: {e}")
 
 class TournamentSearchSerializer(serializers.ModelSerializer):
     class Meta:
