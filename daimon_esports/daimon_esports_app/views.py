@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from .models import User, Discipline, Tournament, Team, Game, Player, Request
-from .serializers import RegisterSerializer, LogoutSerializer, UserSerializer, DisciplineSerializer, TournamentSerializer, TournamentSearchSerializer, TeamSerializer, GameSerializer, PlayerSerializer, RequestSerializer
+from .serializers import RegisterSerializer, LogoutSerializer, UserPasswordSerializer, UserSerializer, DisciplineSerializer, TournamentSerializer, TournamentSearchSerializer, TeamSerializer, GameSerializer, PlayerSerializer, RequestSerializer
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import filters
@@ -24,6 +24,40 @@ class UserView(generics.RetrieveAPIView):
         except (AttributeError, ObjectDoesNotExist):
             pass
         return Response("User deleted", status=status.HTTP_200_OK)
+
+class UserName(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request, *args, **kwargs):
+        return Response(self.serializer_class(request.user).data)
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        user.name = request.data['name']
+        user.save()
+        return Response(self.serializer_class(user).data)
+
+class UserUserName(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request, *args, **kwargs):
+        return Response(self.serializer_class(request.user).data)
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        user.username = request.data['username']
+        user.save()
+        return Response(self.serializer_class(user).data)
+
+class UserPassword(generics.CreateAPIView):
+    serializer_class = UserPasswordSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user.set_password(serializer.validated_data['password'])
+            user.save()
+            return Response("Password changed", status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserRegister(generics.CreateAPIView):
     queryset = User.objects.all()

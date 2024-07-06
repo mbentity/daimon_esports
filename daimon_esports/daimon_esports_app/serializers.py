@@ -34,6 +34,8 @@ class UserSerializer(serializers.ModelSerializer):
             instance.save()
         return instance
 
+class UserPasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(write_only=True)
 
 class DisciplineSerializer(serializers.ModelSerializer):
     class Meta:
