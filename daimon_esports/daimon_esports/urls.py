@@ -30,6 +30,7 @@ urlpatterns = [
     path('user/logout/', views.UserLogout.as_view(), name='user-logout'),
     path('user/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('user/authenticated/', views.UserAuthenticated.as_view(), name='user-authenticated'),
+    path('user/teams/', views.UserTeams.as_view(), name='user-teams'),
     path('user/tournaments/', views.UserTournaments.as_view(), name='user-tournaments'),
     path('users/', views.UserList.as_view()),
     path('users/<str:pk>/', views.UserDetail.as_view()),

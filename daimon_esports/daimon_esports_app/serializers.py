@@ -43,11 +43,6 @@ class DisciplineSerializer(serializers.ModelSerializer):
         model = Discipline
         fields = '__all__'
 
-class TournamentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tournament
-        fields = '__all__'
-
 class TournamentCreateSerializer(serializers.ModelSerializer):
     sub_start_timestamp = serializers.CharField(write_only=True)
     sub_stop_timestamp = serializers.CharField(write_only=True)
@@ -80,11 +75,6 @@ class TournamentSearchSerializer(serializers.ModelSerializer):
         fields = '__all__'
         depth = 1
 
-class TeamSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Team
-        fields = '__all__'
-
 class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
@@ -95,6 +85,23 @@ class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
         fields = '__all__'
+        depth = 1
+
+class TeamSerializer(serializers.ModelSerializer):
+    players = PlayerSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Team
+        fields = '__all__'
+        depth = 1
+
+class TournamentSerializer(serializers.ModelSerializer):
+    teams = TeamSerializer(many=True, read_only=True)
+    games = GameSerializer(many=True, read_only=True)
+    class Meta:
+        model = Tournament
+        fields = '__all__'
+        depth = 1
 
 class RequestSerializer(serializers.ModelSerializer):
     class Meta:

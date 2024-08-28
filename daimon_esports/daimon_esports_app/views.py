@@ -92,6 +92,12 @@ class UserTournaments(generics.ListAPIView):
     def get_queryset(self):
         return Tournament.objects.filter(user=self.request.user)
 
+class UserTeams(generics.ListAPIView):
+    serializer_class = TeamSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def get_queryset(self):
+        return Team.objects.filter(players=(Player.objects.get(user=self.request.user)))
+
 class DisciplineList(generics.ListCreateAPIView):
     queryset = Discipline.objects.all()
     serializer_class = DisciplineSerializer

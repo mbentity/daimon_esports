@@ -92,7 +92,7 @@ class Team(models.Model):
     name = models.CharField(max_length=255)
     tag = models.CharField(max_length=4, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
+    tournament = models.ForeignKey(Tournament, related_name='teams', on_delete=models.CASCADE)
     def save(self, *args, **kwargs):
         if not self.id:
             self.id = self.generate_unique_id()
@@ -109,11 +109,11 @@ class Game(models.Model):
     id = models.CharField(max_length=12, primary_key=True)
     team1 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team1')
     team2 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team2')
-    score1 = models.IntegerField(default=None, blank=True, null=True)
-    score2 = models.IntegerField(default=None, blank=True, null=True)
+    score1 = models.IntegerField(default=0, blank=True, null=True)
+    score2 = models.IntegerField(default=0, blank=True, null=True)
     timestamp = models.DateTimeField()
     minutes = models.IntegerField()
-    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
+    tournament = models.ForeignKey(Tournament, related_name='games', on_delete=models.CASCADE)
     def save(self, *args, **kwargs):
         if not self.id:
             self.id = self.generate_unique_id()
@@ -129,7 +129,7 @@ class Game(models.Model):
 class Player(models.Model):
     id = models.CharField(max_length=12, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, related_name='players', on_delete=models.CASCADE)
     class Meta:
         unique_together = ('user', 'team')
     def save(self, *args, **kwargs):
