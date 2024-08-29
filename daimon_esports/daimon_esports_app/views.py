@@ -138,11 +138,10 @@ class TournamentCreate(generics.CreateAPIView):
     serializer_class = TournamentCreateSerializer
     permission_classes = [permissions.IsAuthenticated]
     def post(self, request, *args, **kwargs):
-        queryset = Tournament.objects.all()
         # allow only if user is an organizer
         if not request.user.organizer:
             return Response("User is not an organizer", status=status.HTTP_403_FORBIDDEN)
-        return self.create(request, *args, **kwargs)
+        return Response(self.serializer_class(data=request.data).is_valid())
 
 class TournamentUpdate(generics.UpdateAPIView):
     queryset = Tournament.objects.all()

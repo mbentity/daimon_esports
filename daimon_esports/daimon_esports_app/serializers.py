@@ -1,4 +1,5 @@
 from datetime import datetime
+from dateutil.parser import parse as date_parse
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import User, Discipline, Tournament, Team, Game, Player, Request
@@ -44,25 +45,25 @@ class DisciplineSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class TournamentCreateSerializer(serializers.ModelSerializer):
-    sub_start_timestamp = serializers.CharField(write_only=True)
-    sub_stop_timestamp = serializers.CharField(write_only=True)
-    games_start_timestamp = serializers.CharField(write_only=True)
-    games_stop_timestamp = serializers.CharField(write_only=True)
+    sub_start = serializers.CharField(write_only=True)
+    sub_stop = serializers.CharField(write_only=True)
+    games_start = serializers.CharField(write_only=True)
+    games_stop = serializers.CharField(write_only=True)
     class Meta:
         model = Tournament
         fields = ['name', 'discipline', 'team_count', 'player_count', 'meeting_platform', 'streaming_platform',
-                    'sub_start_timestamp', 'sub_stop_timestamp', 'games_start_timestamp', 'games_stop_timestamp']
+                    'sub_start', 'sub_stop', 'games_start', 'games_stop']
     def create(self, validated_data):
         try:
-            sub_start_timestamp = validated_data.pop('sub_start_timestamp')
-            sub_stop_timestamp = validated_data.pop('sub_stop_timestamp')
-            games_start_timestamp = validated_data.pop('games_start_timestamp')
-            games_stop_timestamp = validated_data.pop('games_stop_timestamp')
+            sub_start = validated_data.pop('sub_start')
+            sub_stop = validated_data.pop('sub_stop')
+            games_start = validated_data.pop('games_start')
+            games_stop = validated_data.pop('games_stop')
 
-            validated_data['sub_start'] = datetime.fromisoformat(sub_start_timestamp)
-            validated_data['sub_stop'] = datetime.fromisoformat(sub_stop_timestamp)
-            validated_data['games_start'] = datetime.fromisoformat(games_start_timestamp)
-            validated_data['games_stop'] = datetime.fromisoformat(games_stop_timestamp)
+            validated_data['sub_start'] = date_parse(sub_start)
+            validated_data['sub_stop'] = date_parse(sub_stop)
+            validated_data['games_start'] = date_parse(games_start)
+            validated_data['games_stop'] = date_parse(games_stop)
             validated_data['user'] = self.context['request'].user
 
             return Tournament.objects.create(**validated_data)
