@@ -89,6 +89,8 @@ class PlayerSerializer(serializers.ModelSerializer):
 
 class TeamSerializer(serializers.ModelSerializer):
     players = PlayerSerializer(many=True, read_only=True)
+    team1 = GameSerializer(many=True, read_only=True)
+    team2 = GameSerializer(many=True, read_only=True)
 
     class Meta:
         model = Team
@@ -107,3 +109,4 @@ class RequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Request
         fields = '__all__'
+        depth = 1

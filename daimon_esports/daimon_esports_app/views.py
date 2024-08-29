@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import filters
 from django.utils import timezone
+from django.db.models import Q
 
 # Create your views here.
 
@@ -96,7 +97,12 @@ class UserTeams(generics.ListAPIView):
     serializer_class = TeamSerializer
     permission_classes = [permissions.IsAuthenticated]
     def get_queryset(self):
-        return Team.objects.filter(players=(Player.objects.get(user=self.request.user)))
+        players = Player.objects.filter(user=self.request.user)
+        if players.exists():
+            teams = Team.objects.filter(players__in=players)
+            if teams.exists():
+                return teams
+        return Team.objects.none()
 
 class DisciplineList(generics.ListCreateAPIView):
     queryset = Discipline.objects.all()
@@ -113,6 +119,19 @@ class TournamentList(generics.ListCreateAPIView):
 class TournamentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
+
+class TournamentCanCreateTeam(generics.RetrieveAPIView):
+    queryset = Tournament.objects.all()
+    serializer_class = TournamentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request, *args, **kwargs):
+        user = self.request.user
+        tournament = self.get_object()
+        isAlreadyInTournament = Player.objects.filter(user=user, team__tournament=tournament).exists()
+        isTournamentOrganizer = tournament.user == user
+        if isAlreadyInTournament or isTournamentOrganizer:
+            return Response(False)
+        return Response(True)
 
 class TournamentCreate(generics.CreateAPIView):
     queryset = Tournament.objects.all()
@@ -210,3 +229,27 @@ class RequestList(generics.ListCreateAPIView):
 class RequestDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def delete(self, request, *args, **kwargs):
+        request = self.get_object()
+        user = self.request.user
+        if request.sender == user or request.receiver == user:
+            request.delete()
+            return Response("Request deleted", status=status.HTTP_200_OK)
+        return Response("User is not the sender or receiver", status=status.HTTP_403_FORBIDDEN)
+
+class UserRequests(generics.ListAPIView):
+    serializer_class = RequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Request.objects.filter(receiver=user)
+
+class UserOutgoingRequests(generics.ListAPIView):
+    serializer_class = RequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Request.objects.filter(sender=user)

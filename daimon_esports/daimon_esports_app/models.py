@@ -148,6 +148,7 @@ class Request(models.Model):
     id = models.CharField(max_length=12, primary_key=True)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sender')
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='receiver')
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
     class Meta:
         unique_together = ('sender', 'receiver')
     def save(self, *args, **kwargs):
