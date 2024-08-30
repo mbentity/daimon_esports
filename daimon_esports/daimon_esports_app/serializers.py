@@ -92,11 +92,20 @@ class TeamSerializer(serializers.ModelSerializer):
     players = PlayerSerializer(many=True, read_only=True)
     team1 = GameSerializer(many=True, read_only=True)
     team2 = GameSerializer(many=True, read_only=True)
-
     class Meta:
         model = Team
         fields = '__all__'
         depth = 1
+
+class TeamCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Team
+        fields = ['user', 'name', 'tag', 'tournament']
+    def create(self, validated_data):
+        user = validated_data.get('user')
+        team = Team.objects.create(**validated_data)
+        Player.objects.create(user=user, team=team)
+        return team
 
 class TournamentSerializer(serializers.ModelSerializer):
     teams = TeamSerializer(many=True, read_only=True)

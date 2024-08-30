@@ -45,6 +45,7 @@ urlpatterns = [
     path('tournaments/<str:pk>/', views.TournamentDetail.as_view()),
     path('tournaments/<str:pk>/cancreateteam/', views.TournamentCanCreateTeam.as_view(), name='tournament-cancreateteam'),
     path('teams/', views.TeamList.as_view()),
+    path('teamscreate/', views.TeamCreate.as_view(), name='team-create'),
     path('teams/<str:pk>/', views.TeamDetail.as_view()),
     path('games/', views.GameList.as_view()),
     path('games/pop/', views.GamePop.as_view(), name='game-pop'),
@@ -52,6 +53,8 @@ urlpatterns = [
     path('players/', views.PlayerList.as_view()),
     path('players/<str:pk>/', views.PlayerDetail.as_view()),
     path('requests/', views.RequestList.as_view()),
+    path('requestscreate/', views.RequestCreate.as_view(), name='request-create'),
+    path('requests/accept/<str:pk>/', views.RequestAccept.as_view(), name='request-accept'),
     path('requests/<str:pk>/', views.RequestDetail.as_view()),
     path('admin/', admin.site.urls, name='admin'),
 ]

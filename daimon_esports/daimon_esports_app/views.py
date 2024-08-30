@@ -1,12 +1,11 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from .models import User, Discipline, Tournament, Team, Game, Player, Request
-from .serializers import RegisterSerializer, LogoutSerializer, TournamentCreateSerializer, UserPasswordSerializer, UserSerializer, DisciplineSerializer, TournamentSerializer, TournamentSearchSerializer, TeamSerializer, GameSerializer, PlayerSerializer, RequestSerializer
+from .serializers import RegisterSerializer, LogoutSerializer, TeamCreateSerializer, TournamentCreateSerializer, UserPasswordSerializer, UserSerializer, DisciplineSerializer, TournamentSerializer, TournamentSearchSerializer, TeamSerializer, GameSerializer, PlayerSerializer, RequestSerializer
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import filters
 from django.utils import timezone
-from django.db.models import Q
 
 # Create your views here.
 
@@ -129,7 +128,8 @@ class TournamentCanCreateTeam(generics.RetrieveAPIView):
         tournament = self.get_object()
         isAlreadyInTournament = Player.objects.filter(user=user, team__tournament=tournament).exists()
         isTournamentOrganizer = tournament.user == user
-        if isAlreadyInTournament or isTournamentOrganizer:
+        hasPendingRequests = Request.objects.filter(sender=user, team__tournament=tournament).exists()
+        if isAlreadyInTournament or isTournamentOrganizer or hasPendingRequests:
             return Response(False)
         return Response(True)
 
@@ -185,6 +185,14 @@ class TeamList(generics.ListCreateAPIView):
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
 
+class TeamCreate(generics.CreateAPIView):
+    queryset = Team.objects.all()
+    serializer_class = TeamCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        request.data['user'] = request.user.id
+        return self.create(request, *args, **kwargs)
+
 class TeamDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
@@ -236,6 +244,34 @@ class RequestDetail(generics.RetrieveUpdateDestroyAPIView):
             request.delete()
             return Response("Request deleted", status=status.HTTP_200_OK)
         return Response("User is not the sender or receiver", status=status.HTTP_403_FORBIDDEN)
+
+class RequestCreate(generics.CreateAPIView):
+    queryset = Request.objects.all()
+    serializer_class = RequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        user = self.request.user
+        teamId = request.data['team']
+        team = Team.objects.get(id=teamId)
+        teamOwner = team.user
+        object = Request(sender=user, receiver=teamOwner, team=team)
+        object.save()
+        return Response("Request sent", status=status.HTTP_200_OK)
+
+class RequestAccept(generics.UpdateAPIView):
+    queryset = Request.objects.all()
+    serializer_class = RequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def put(self, request, *args, **kwargs):
+        user = self.request.user
+        request = self.get_object()
+        if request.receiver == user:
+            player = Player(user=request.sender, team=request.team)
+            player.save()
+            request.delete()
+            Request.objects.filter(sender=request.sender, team__tournament=request.team.tournament).delete()
+            return Response("Request accepted", status=status.HTTP_200_OK)
+        return Response("User is not the receiver", status=status.HTTP_403_FORBIDDEN)
 
 class UserRequests(generics.ListAPIView):
     serializer_class = RequestSerializer
