@@ -93,6 +93,7 @@ class Team(models.Model):
     tag = models.CharField(max_length=4, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     tournament = models.ForeignKey(Tournament, related_name='teams', on_delete=models.CASCADE)
+    logo = models.ImageField(upload_to='logos/', blank=True, null=True)
     def save(self, *args, **kwargs):
         if not self.id:
             self.id = self.generate_unique_id()

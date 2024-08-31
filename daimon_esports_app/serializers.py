@@ -88,7 +88,7 @@ class TournamentCreateSerializer(serializers.ModelSerializer):
 class TeamCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = ['user', 'name', 'tag', 'tournament']
+        fields = ['user', 'name', 'tag', 'tournament', 'logo']
     def create(self, validated_data):
         user = validated_data.get('user')
         team = Team.objects.create(**validated_data)

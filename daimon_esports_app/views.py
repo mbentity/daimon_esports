@@ -199,6 +199,23 @@ class TournamentMeet(generics.UpdateAPIView):
         tournament.save()
         return Response(self.serializer_class(tournament).data)
 
+class TournamentDates(generics.UpdateAPIView):
+    queryset = Tournament.objects.all()
+    serializer_class = TournamentCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def put(self, request, *args, **kwargs):
+        if not request.user.organizer:
+            return Response("User is not an organizer", status=status.HTTP_403_FORBIDDEN)
+        tournament = self.get_object()
+        if tournament.user != request.user:
+            return Response("User is not the organizer of the tournament", status=status.HTTP_403_FORBIDDEN)
+        tournament.sub_start = request.data['subStart']
+        tournament.sub_stop = request.data['subStop']
+        tournament.games_start = request.data['gamesStart']
+        tournament.games_stop = request.data['gamesStop']
+        tournament.save()
+        return Response(self.serializer_class(tournament).data)
+
 class TournamentCanSubscribe(generics.RetrieveAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
@@ -224,10 +241,85 @@ class TeamCreate(generics.CreateAPIView):
 class TeamDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
+    def put(self, request, *args, **kwargs):
+        team = self.get_object()
+        user = self.request.user
+        if team.user == user:
+            team.name = request.data['name']
+            team.save()
+            return Response(self.serializer_class(team).data)
+        return Response("User is not the team owner", status=status.HTTP_403_FORBIDDEN)
+    def delete(self, request, *args, **kwargs):
+        team = self.get_object()
+        user = self.request.user
+        if team.user == user:
+            team.delete()
+            return Response("Team deleted", status=status.HTTP_200_OK)
+        return Response("User is not the team owner", status=status.HTTP_403_FORBIDDEN)
+    
+class TeamTransferOwnership(generics.UpdateAPIView):
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
+    def put(self, request, *args, **kwargs):
+        team = self.get_object()
+        user = self.request.user
+        if team.user == user:
+            newOwner = User.objects.get(id=request.data['newOwner'])
+            team.user = newOwner
+            team.save()
+            return Response(self.serializer_class(team).data)
+        return Response("User is not the team owner", status=status.HTTP_403_FORBIDDEN)
+    
+class TeamLogo(generics.UpdateAPIView):
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
+    def put(self, request, *args, **kwargs):
+        team = self.get_object()
+        user = self.request.user
+        if team.user == user:
+            team.logo = request.data['logo']
+            team.save()
+            return Response(self.serializer_class(team).data)
+        return Response("User is not the team owner", status=status.HTTP_403_FORBIDDEN)
 
 class GameList(generics.ListCreateAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
+
+class GameTeams(generics.RetrieveUpdateAPIView):
+    queryset = Game.objects.all()
+    serializer_class = GameSerializer
+    def get(self, request, *args, **kwargs):
+        game = self.get_object()
+        teams = Team.objects.filter(game=game)
+        return Response(TeamSerializer(teams, many=True).data)
+    
+class GameScore(generics.UpdateAPIView):
+    queryset = Game.objects.all()
+    serializer_class = GameSerializer
+    def put(self, request, *args, **kwargs):
+        game = self.get_object()
+        game.score = request.data['score']
+        game.save()
+        return Response(self.serializer_class(game).data)
+    
+class GameTime(generics.UpdateAPIView):
+    queryset = Game.objects.all()
+    serializer_class = GameSerializer
+    def put(self, request, *args, **kwargs):
+        game = self.get_object()
+        game.time = request.data['time']
+        game.save()
+        return Response(self.serializer_class(game).data)
+    
+class GameMinutes(generics.UpdateAPIView):
+    queryset = Game.objects.all()
+    serializer_class = GameSerializer
+    def put(self, request, *args, **kwargs):
+        game = self.get_object()
+        game.minutes = request.data['minutes']
+        game.save()
+        return Response(self.serializer_class(game).data)
 
 class GameDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Game.objects.all()
@@ -240,6 +332,14 @@ class PlayerList(generics.ListCreateAPIView):
 class PlayerDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer
+    def delete(self, request, *args, **kwargs):
+        player = self.get_object()
+        user = self.request.user
+        # only the player or the team owner can delete the player
+        if player.user == user or player.team.user == user:
+            player.delete()
+            return Response("Player deleted", status=status.HTTP_200_OK)
+        return Response("User is not the player or the team owner", status=status.HTTP_403_FORBIDDEN)
 
 class RequestCreate(generics.CreateAPIView):
     queryset = Request.objects.all()
