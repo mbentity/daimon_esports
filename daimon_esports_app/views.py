@@ -281,6 +281,14 @@ class TeamLogo(generics.UpdateAPIView):
             team.save()
             return Response(self.serializer_class(team).data)
         return Response("User is not the team owner", status=status.HTTP_403_FORBIDDEN)
+    def delete(self, request, *args, **kwargs):
+        team = self.get_object()
+        user = self.request.user
+        if team.user == user:
+            team.logo = None
+            team.save()
+            return Response(self.serializer_class(team).data)
+        return Response("User is not the team owner", status=status.HTTP_403_FORBIDDEN)
 
 class GameList(generics.ListCreateAPIView):
     queryset = Game.objects.all()
