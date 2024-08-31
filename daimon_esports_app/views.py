@@ -1,9 +1,8 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from .models import User, Discipline, Tournament, Team, Game, Player, Request
-from .serializers import RegisterSerializer, TeamCreateSerializer, TournamentCreateSerializer, UserSerializer, UserSerializer, DisciplineSerializer, TournamentSerializer, TournamentSearchSerializer, TeamSerializer, GameSerializer, PlayerSerializer, RequestSerializer
+from .serializers import TeamCreateSerializer, TournamentCreateSerializer, UserSerializer, UserSerializer, DisciplineSerializer, TournamentSerializer, TournamentSearchSerializer, TeamSerializer, GameSerializer, PlayerSerializer, RequestSerializer
 from django.http import HttpResponse
-from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import filters
 from django.utils import timezone
 
@@ -16,16 +15,13 @@ class UserView(generics.RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         return Response(self.serializer_class(request.user).data)
     def delete(self, request, *args, **kwargs):
-        try:
-            request.user.auth_token.delete()
-            request.user.delete()
-        except (AttributeError, ObjectDoesNotExist):
-            pass
+        user = request.user
+        user.delete()
         return Response("User deleted", status=status.HTTP_200_OK)
 
 class UserRegister(generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = RegisterSerializer
+    serializer_class = UserSerializer
 
 class UserName(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
@@ -53,12 +49,9 @@ class UserPassword(generics.CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
     def post(self, request, *args, **kwargs):
-        # { password, newPassword }
-        # first, check if the current password is correct
         user = request.user
         if not user.check_password(request.data['password']):
             return Response("Invalid password", status=status.HTTP_400_BAD_REQUEST)
-        # then, change the password
         user.set_password(request.data['newPassword'])
         user.save()
         return Response("Password changed", status=status.HTTP_200_OK)
@@ -118,10 +111,17 @@ class ClosedFilter(filters.BaseFilterBackend):
                 return queryset.exclude(sub_stop__lte=timezone.now())
         return queryset
 
+class DisciplineFilter(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        discipline = request.query_params.get('discipline', None)
+        if discipline is not None:
+            return queryset.filter(discipline__id=discipline)
+        return queryset
+
 class TournamentSearch(generics.ListAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSearchSerializer
-    filter_backends = [filters.SearchFilter, CompletedFilter, ClosedFilter]
+    filter_backends = [filters.SearchFilter, CompletedFilter, ClosedFilter, DisciplineFilter]
     search_fields = ['name', 'discipline__name']
 
 class TournamentCreate(generics.CreateAPIView):
@@ -260,6 +260,7 @@ class TeamDetail(generics.RetrieveUpdateDestroyAPIView):
 class TeamTransferOwnership(generics.UpdateAPIView):
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
+    permission_classes = [permissions.IsAuthenticated]
     def put(self, request, *args, **kwargs):
         team = self.get_object()
         user = self.request.user
@@ -273,6 +274,7 @@ class TeamTransferOwnership(generics.UpdateAPIView):
 class TeamLogo(generics.UpdateAPIView):
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
+    permission_classes = [permissions.IsAuthenticated]
     def put(self, request, *args, **kwargs):
         team = self.get_object()
         user = self.request.user
@@ -297,14 +299,21 @@ class GameList(generics.ListCreateAPIView):
 class GameTeams(generics.RetrieveUpdateAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
-    def get(self, request, *args, **kwargs):
+    permission_classes = [permissions.IsAuthenticated]
+    def put(self, request, *args, **kwargs):
         game = self.get_object()
-        teams = Team.objects.filter(game=game)
-        return Response(TeamSerializer(teams, many=True).data)
+        user = self.request.user
+        if game.tournament.user != user:
+            return Response("User is not the organizer of the tournament", status=status.HTTP_403_FORBIDDEN)
+        game.team1 = Team.objects.get(id=request.data['team1'])
+        game.team2 = Team.objects.get(id=request.data['team2'])
+        game.save()
+        return Response(self.serializer_class(game).data)
     
 class GameScore(generics.UpdateAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
+    permission_classes = [permissions.IsAuthenticated]
     def put(self, request, *args, **kwargs):
         game = self.get_object()
         game.score = request.data['score']
@@ -314,6 +323,7 @@ class GameScore(generics.UpdateAPIView):
 class GameTime(generics.UpdateAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
+    permission_classes = [permissions.IsAuthenticated]
     def put(self, request, *args, **kwargs):
         game = self.get_object()
         game.time = request.data['time']
@@ -323,6 +333,7 @@ class GameTime(generics.UpdateAPIView):
 class GameMinutes(generics.UpdateAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
+    permission_classes = [permissions.IsAuthenticated]
     def put(self, request, *args, **kwargs):
         game = self.get_object()
         game.minutes = request.data['minutes']
@@ -333,13 +344,10 @@ class GameDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
 
-class PlayerList(generics.ListCreateAPIView):
-    queryset = Player.objects.all()
-    serializer_class = PlayerSerializer
-
 class PlayerDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer
+    permission_classes = [permissions.IsAuthenticated]
     def delete(self, request, *args, **kwargs):
         player = self.get_object()
         user = self.request.user

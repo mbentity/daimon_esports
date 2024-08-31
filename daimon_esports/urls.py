@@ -37,7 +37,6 @@ urlpatterns = [
     path('games/<str:pk>/score/', views.GameScore.as_view(), name='game-score'),
     path('games/<str:pk>/time/', views.GameTime.as_view(), name='game-time'),
     path('games/<str:pk>/minutes/', views.GameMinutes.as_view(), name='game-minutes'),
-    path('players/', views.PlayerList.as_view(), name='player-list'),
     path('players/<str:pk>/', views.PlayerDetail.as_view(), name='player-detail'),
     path('requests/create/', views.RequestCreate.as_view(), name='request-create'),
     path('requests/accept/', views.RequestAccept.as_view(), name='request-accept'),

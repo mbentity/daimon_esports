@@ -5,23 +5,14 @@ from .models import User, Discipline, Tournament, Team, Game, Player, Request
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=False)
     class Meta:
         model = User
         fields = ['id', 'name', 'username', 'password', 'organizer']
-    def update(self, instance, validated_data):
-        password = validated_data.pop('password', None)
-        instance = super().update(instance, validated_data)
-        if password:
-            instance.set_password(password)
-            instance.save()
-        return instance
-
-class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-    class Meta:
-        model = User
-        fields = ['name', 'username', 'password']
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'id': {'read_only': True},
+            'organizer': {'read_only': True},
+        }
     def create(self, validated_data):
         user = User(
             name=validated_data['name'],
@@ -30,6 +21,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        instance = super().update(instance, validated_data)
+        if password:
+            instance.set_password(password)
+            instance.save()
+        return instance
 
 class GameSerializer(serializers.ModelSerializer):
     class Meta:
