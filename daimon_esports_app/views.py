@@ -46,6 +46,9 @@ class UserRegister(generics.CreateAPIView):
         isUsernameTooLong = len(username) > 30
         if isUsernameTooLong:
             return Response("Username too long", status=status.HTTP_400_BAD_REQUEST)
+        isUsernameNotAlphanumeric = not username.isalnum()
+        if isUsernameNotAlphanumeric:
+            return Response("Username must be alphanumeric", status=status.HTTP_400_BAD_REQUEST)
         password = request.data['password']
         isPasswordTooShort = len(password) < 3
         if isPasswordTooShort:
@@ -92,6 +95,9 @@ class UserUserName(generics.UpdateAPIView):
         isUsernameTooLong = len(user.username) > 30
         if isUsernameTooLong:
             return Response("Username too long", status=status.HTTP_400_BAD_REQUEST)
+        isUsernameNotAlphanumeric = not user.username.isalnum()
+        if isUsernameNotAlphanumeric:
+            return Response("Username must be alphanumeric", status=status.HTTP_400_BAD_REQUEST)
         user.save()
         return Response(self.serializer_class(user).data)
 
