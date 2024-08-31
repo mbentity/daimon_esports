@@ -9,7 +9,7 @@ class UserAdminForm(forms.ModelForm):
     class Meta:
         model = User
         fields = '__all__'
-        exclude = ['id']
+        exclude = ['id', 'password']
 class UserAdmin(admin.ModelAdmin):
     form = UserAdminForm
 

@@ -28,12 +28,24 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
             instance.save()
         return instance
+    
+class GameReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Game
+        fields = '__all__'
+        depth = 1
 
 class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
         fields = '__all__'
-        depth = 1
+        extra_kwargs = {
+            'id': {'read_only': True},
+        }
+    def create(self, validated_data):
+        print(validated_data)
+        game = Game.objects.create(**validated_data)
+        return game
 
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,22 +53,27 @@ class PlayerSerializer(serializers.ModelSerializer):
         fields = '__all__'
         depth = 1
 
-class TeamSerializer(serializers.ModelSerializer):
+class TeamReadSerializer(serializers.ModelSerializer):
     players = PlayerSerializer(many=True, read_only=True)
-    team1 = GameSerializer(many=True, read_only=True)
-    team2 = GameSerializer(many=True, read_only=True)
+    team1 = GameReadSerializer(many=True, read_only=True)
+    team2 = GameReadSerializer(many=True, read_only=True)
     class Meta:
         model = Team
         fields = '__all__'
         depth = 1
 
-class TournamentSerializer(serializers.ModelSerializer):
-    teams = TeamSerializer(many=True, read_only=True)
-    games = GameSerializer(many=True, read_only=True)
+class TeamSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Tournament
+        model = Team
         fields = '__all__'
-        depth = 1
+        extra_kwargs = {
+            'id': {'read_only': True},
+        }
+    def create(self, validated_data):
+        user = validated_data.get('user')
+        team = Team.objects.create(**validated_data)
+        Player.objects.create(user=user, team=team)
+        return team
 
 class RequestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -69,26 +86,27 @@ class DisciplineSerializer(serializers.ModelSerializer):
         model = Discipline
         fields = '__all__'
 
-class TournamentSearchSerializer(serializers.ModelSerializer):
+class TournamentReadSerializer(serializers.ModelSerializer):
+    teams = TeamReadSerializer(many=True, read_only=True)
+    games = GameReadSerializer(many=True, read_only=True)
     class Meta:
         model = Tournament
         fields = '__all__'
         depth = 1
 
-class TournamentCreateSerializer(serializers.ModelSerializer):
+class TournamentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tournament
-        exclude = ['id']
+        fields = '__all__'
+        extra_kwargs = {
+            'id': {'read_only': True},
+        }
     def create(self, validated_data):
         tournament = Tournament.objects.create(**validated_data)
         return tournament
 
-class TeamCreateSerializer(serializers.ModelSerializer):
+class TournamentSearchSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Team
-        fields = ['user', 'name', 'tag', 'tournament', 'logo']
-    def create(self, validated_data):
-        user = validated_data.get('user')
-        team = Team.objects.create(**validated_data)
-        Player.objects.create(user=user, team=team)
-        return team
+        model = Tournament
+        fields = '__all__'
+        depth = 1
