@@ -64,8 +64,8 @@ class Discipline(models.Model):
 
 class Tournament(models.Model):
     id = models.CharField(max_length=12, primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     sub_start = models.DateTimeField()
     sub_stop = models.DateTimeField()
     games_start = models.DateTimeField()

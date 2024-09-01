@@ -48,9 +48,13 @@ INSTALLED_APPS = [
 ]
 
 MEDIA_URL = '/media/'
-STATIC_URL = '/staticfiles/'
+STATIC_URL = '/static/'
 MEDIA_ROOT = Path(BASE_DIR, 'media')
 STATIC_ROOT = Path(BASE_DIR, 'staticfiles')
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
