@@ -42,10 +42,6 @@ class GameSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'id': {'read_only': True},
         }
-    def create(self, validated_data):
-        print(validated_data)
-        game = Game.objects.create(**validated_data)
-        return game
 
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -101,9 +97,6 @@ class TournamentSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'id': {'read_only': True},
         }
-    def create(self, validated_data):
-        tournament = Tournament.objects.create(**validated_data)
-        return tournament
 
 class TournamentSearchSerializer(serializers.ModelSerializer):
     class Meta:
