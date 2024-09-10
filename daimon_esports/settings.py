@@ -50,7 +50,7 @@ INSTALLED_APPS = [
 MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
 MEDIA_ROOT = Path(BASE_DIR, 'media')
-STATIC_ROOT = Path(BASE_DIR, 'staticfiles')
+STATIC_ROOT = Path(BASE_DIR, 'static')
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
