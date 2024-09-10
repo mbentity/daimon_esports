@@ -17,7 +17,7 @@ _Schermata principale della piattaforma._
 
 - git clone https://github.com/mbentity/daimon_esports
 - docker build -t daimon_esports daimon_esports
-- docker run -p 3000:3000 daimon_esports
+- docker run -p 8000:8000 daimon_esports
 
 # Installazione Frontend
 
