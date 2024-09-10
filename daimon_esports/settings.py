@@ -52,10 +52,6 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = Path(BASE_DIR, 'media')
 STATIC_ROOT = Path(BASE_DIR, 'static')
 
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',

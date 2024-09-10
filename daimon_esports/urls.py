@@ -48,4 +48,4 @@ urlpatterns = [
     path('requests/<str:pk>/accept/', views.RequestAccept.as_view()),
     path('requests/<str:pk>/delete/', views.RequestDetail.as_view()),
     path('admin/', admin.site.urls),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
